@@ -1,0 +1,16 @@
+{
+	"name": "InfraVerse",
+	"image": "mcr.microsoft.com/devcontainers/base:noble",
+	"features": {
+		"ghcr.io/devcontainers-extra/features/terraform-asdf:2": {}
+	},
+	"forwardPorts": [],
+	"postCreateCommand": "terraform -v",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"HashiCorp.terraform"
+			]
+		}
+	}
+}
