@@ -7,31 +7,31 @@ resource "random_password" "vm_password" {
 }
 
 // Resource to download the Alpine Linux cloud image
-resource "proxmox_virtual_environment_download_file" "alpine_iso" {
+resource "proxmox_virtual_environment_download_file" "vm_iso" {
   content_type = "iso"
-  datastore_id = "local"
-  node_name    = "pve1"
-  url          = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/cloud/nocloud_alpine-3.21.2-x86_64-bios-cloudinit-r0.qcow2"
-  file_name    = "miche-alpine-cloudinit.img"
+  datastore_id = var.vm_iso_datastore_id
+  node_name    = var.vm_iso_node_name
+  url          = var.vm_iso_url
+  file_name    = var.vm_iso_file_name
 }
 
 resource "proxmox_virtual_environment_vm" "vm" {
-  name        = "test-miche"
-  description = "test-miche"
+  name        = var.vm_name
+  description = var.vm_description
   tags        = [
-    "miche"
+    "zp1ke"
   ]
 
-  node_name   = "pve1"
-  vm_id       = 259
+  node_name   = var.vm_node_name
+  vm_id       = var.vm_id
 
   memory {
-    dedicated = 8192
+    dedicated = var.vm_memory_dedicated
   }
 
   cpu {
-    cores = 2
-    sockets = 1
+    cores = var.vm_cpu_cores
+    sockets = var.vm_cpu_sockets
   }
 
   agent {
@@ -49,15 +49,15 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   disk {
-    datastore_id = "local"
-    file_id      = proxmox_virtual_environment_download_file.alpine_iso.id
-    interface    = "scsi0"
-    size         = 10
+    datastore_id = var.vm_disk_datastore_id
+    file_id      = proxmox_virtual_environment_download_file.vm_iso.id
+    interface    = var.vm_disk_interface
+    size         = var.vm_disk_size
   }
 
   network_device {
-    bridge   = "vmbr0"
-    vlan_id  =  200
+    bridge   = var.vm_network_bridge
+    vlan_id  = var.vm_network_vlan_id
   }
 
   operating_system {
@@ -73,8 +73,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
   initialization {
     ip_config {
       ipv4 {
-        address = "10.150.0.15/24"
-        gateway = "10.150.0.1"
+        address = var.vm_network_ipv4_address
+        gateway = var.vm_network_ipv4_gateway
       }
     }
 
@@ -83,9 +83,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
     }
 
     user_account {
-      #   keys     = [trimspace(tls_private_key.vm_key[each.key].public_key_openssh)]
       password = random_password.vm_password.result
-      username = "alpine"
+      username = var.vm_username
     }
   }
 }
