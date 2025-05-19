@@ -1,7 +1,7 @@
 
 // Resource to generate random
 resource "random_password" "vm_password" {
-  length           = 16
+  length           = 8
   override_special = "%@"
   special          = true
 }
@@ -15,22 +15,28 @@ resource "proxmox_virtual_environment_download_file" "vm_iso" {
   file_name    = var.vm_iso_file_name
 }
 
+// Resource to generate RSA private keys for the VMs
+resource "tls_private_key" "vm_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
 resource "proxmox_virtual_environment_vm" "vm" {
   name        = var.vm_name
   description = var.vm_description
-  tags        = [
+  tags = [
     "zp1ke"
   ]
 
-  node_name   = var.vm_node_name
-  vm_id       = var.vm_id
+  node_name = var.vm_node_name
+  vm_id     = var.vm_id
 
   memory {
     dedicated = var.vm_memory_dedicated
   }
 
   cpu {
-    cores = var.vm_cpu_cores
+    cores   = var.vm_cpu_cores
     sockets = var.vm_cpu_sockets
   }
 
@@ -56,8 +62,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   network_device {
-    bridge   = var.vm_network_bridge
-    vlan_id  = var.vm_network_vlan_id
+    bridge  = var.vm_network_bridge
+    vlan_id = var.vm_network_vlan_id
   }
 
   operating_system {
@@ -79,17 +85,22 @@ resource "proxmox_virtual_environment_vm" "vm" {
     }
 
     dns {
-      servers = [ "8.8.8.8" ]
+      servers = ["8.8.8.8"]
     }
 
     user_account {
+      keys     = [trimspace(tls_private_key.vm_key.public_key_openssh)]
       password = random_password.vm_password.result
       username = var.vm_username
     }
   }
 }
 
-output "rnd_password" {
-  value = random_password.vm_password.result
+output "sensitive" {
   sensitive = true
+  value = {
+    vm_password    = random_password.vm_password.result
+    vm_key_private = tls_private_key.vm_key.private_key_openssh
+    vm_key_public  = tls_private_key.vm_key.public_key_openssh
+  }
 }

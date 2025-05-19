@@ -1,4 +1,5 @@
 .env
+.pk
 .terraform.lock*
 *.tfstate
 *.tfstate.*
