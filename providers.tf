@@ -15,8 +15,8 @@ provider "proxmox" {
   ssh {
     agent = true
     node {
-      address = "10.150.0.10"
-      name = "pve1"
+      address = var.proxmox_node_address
+      name = var.proxmox_node_name
     }
   }
 }

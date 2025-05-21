@@ -11,6 +11,14 @@ variable "proxmox_password" {
   description = "Proxmox VE password"
   type        = string
 }
+variable "proxmox_node_address" {
+  description = "Proxmox VE node address"
+  type        = string
+}
+variable "proxmox_node_name" {
+  description = "Proxmox VE node name"
+  type        = string
+}
 
 # Variables for VM ISO
 variable "vm_iso_datastore_id" {
